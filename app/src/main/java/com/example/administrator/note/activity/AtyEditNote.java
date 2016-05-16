@@ -1,15 +1,166 @@
 package com.example.administrator.note.activity;
 
+import android.app.ListActivity;
+import android.content.Context;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.BaseAdapter;
+import android.widget.EditText;
+import android.widget.ImageView;
+import android.widget.TextView;
 
 import com.example.administrator.note.R;
+import com.example.administrator.note.db.NoteDB;
 
-public class AtyEditNote extends AppCompatActivity {
+import java.util.ArrayList;
+import java.util.List;
+
+public class AtyEditNote extends ListActivity {
+
+    private int noteId = -1;
+    public static final String EXTRA_NOTE_ID = "noteId";
+    public static final String EXTRA_NOTE_NAME = "noteName";
+    public static final String EXTRA_NOTE_CONTENT = "noteContent";
+
+    private EditText etName, etContent;
+    private MediaAdapter adapter;
+
+    private NoteDB db;
+    private SQLiteDatabase dbRead;
+    private View.OnClickListener btnClickHandler = new View.OnClickListener() {
+        @Override
+        public void onClick(View view) {
+            switch (view.getId()){
+                case R.id.btnSave:
+
+                    break;
+                case R.id.btnCancel:
+                    setResult(RESULT_CANCELED);
+                    finish();
+                    break;
+                case R.id.btnAddPhoto:
+
+                    break;
+                case R.id.btnAddVideo:
+
+                    break;
+            }
+        }
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.aty_edit_note);
+
+        db = new NoteDB(this);
+        dbRead = db.getReadableDatabase();
+
+        adapter = new MediaAdapter(this);
+        setListAdapter(adapter);
+
+        etName = (EditText)findViewById(R.id.etName);
+        etContent = (EditText)findViewById(R.id.etContent);
+        noteId = getIntent().getIntExtra(EXTRA_NOTE_ID, -1);
+
+        if(noteId > -1){
+            etName.setText(getIntent().getStringExtra(EXTRA_NOTE_NAME));
+            etContent.setText(getIntent().getStringExtra(EXTRA_NOTE_CONTENT));
+
+            Cursor c = dbRead.query(NoteDB.TABLE_MEDIA,null, NoteDB.COLUMN_MEDIA_OWNER_ID + "=?", new String[] {noteId+""},null,null,null);
+            while (c.moveToNext())
+            {
+                adapter.add(new MediaListCellData(c.getString(c.getColumnIndex(NoteDB.COLUMN_MEDIA_PATH)),c.getInt(c.getColumnIndex(NoteDB.COLUMN_ID))));
+
+            }
+        }
+
+        findViewById(R.id.btnSave).setOnClickListener(btnClickHandler);
+        findViewById(R.id.btnCancel).setOnClickListener(btnClickHandler);
+        findViewById(R.id.btnAddVideo).setOnClickListener(btnClickHandler);
+        findViewById(R.id.btnAddPhoto).setOnClickListener(btnClickHandler);
+
     }
+
+    @Override
+    protected void onDestroy() {
+        dbRead.close();
+        super.onDestroy();
+    }
+
+    static class MediaAdapter extends BaseAdapter{
+
+        private Context context;
+        private List<MediaListCellData> list = new ArrayList<MediaListCellData>();
+
+        public MediaAdapter(Context context)
+        {
+            this.context = context;
+        }
+
+        public void add(MediaListCellData data){
+            list.add(data);
+        }
+        @Override
+        public int getCount() {
+            return list.size();
+        }
+
+        @Override
+        public MediaListCellData getItem(int i) {
+            return list.get(i);
+        }
+
+        @Override
+        public long getItemId(int i) {
+            return i;
+        }
+
+
+        @Override
+        public View getView(int i, View view, ViewGroup viewGroup) {
+            if(view == null)
+            {
+                view = LayoutInflater.from(context).inflate(R.layout.media_list_cell,null);
+
+            }
+
+            MediaListCellData data = getItem(i);
+
+            ImageView ivIcon = (ImageView)view.findViewById(R.id.ivIcon);
+            TextView tvPath = (TextView)view.findViewById(R.id.tvPath);
+
+            ivIcon.setImageResource(data.iconId);
+            tvPath.setText(data.path);
+
+            return view;
+        }
+    }
+    static class MediaListCellData{
+        public  MediaListCellData(String path)
+        {
+            this.path = path;
+
+            if(path.endsWith(".jpg")){
+                iconId = R.drawable.icon_photo;
+            }
+            else if(path.endsWith(".mp4")){
+                iconId = R.drawable.icon_video;
+            }
+        }
+        public  MediaListCellData(String path, int id)
+        {
+            this(path);
+            this.id = id;
+        }
+        int id = -1;
+        String path = "";
+        int iconId = R.mipmap.ic_launcher;
+    }
+
 }
