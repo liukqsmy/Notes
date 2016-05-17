@@ -3,10 +3,14 @@ package com.example.administrator.note.activity;
 import android.app.ListActivity;
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
-import android.support.v7.app.AppCompatActivity;
+import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
+import android.provider.MediaStore;
+import android.provider.Settings;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -18,6 +22,8 @@ import android.widget.TextView;
 import com.example.administrator.note.R;
 import com.example.administrator.note.db.NoteDB;
 
+import java.io.File;
+import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -30,11 +36,19 @@ public class AtyEditNote extends ListActivity {
     public static final String EXTRA_NOTE_NAME = "noteName";
     public static final String EXTRA_NOTE_CONTENT = "noteContent";
 
+    public static final int REQUEST_CODE_GET_PHOTO = 1;
+    public static final int REQUEST_CODE_GET_VIDEO = 2;
+
     private EditText etName, etContent;
     private MediaAdapter adapter;
 
     private NoteDB db;
     private SQLiteDatabase dbRead,dbWrite;
+    private  String currentPath = null;
+
+    Intent i;
+    File f;
+
     private View.OnClickListener btnClickHandler = new View.OnClickListener() {
         @Override
         public void onClick(View view) {
@@ -49,14 +63,46 @@ public class AtyEditNote extends ListActivity {
                     finish();
                     break;
                 case R.id.btnAddPhoto:
+                    i = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+                    f = new File(getMediaDir(), System.currentTimeMillis() + ".jpg");
+                    if(!f.exists()){
+                        try {
+                            f.createNewFile();
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                    currentPath = f.getAbsolutePath();
+                    i.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(f));
 
+                    startActivityForResult(i,REQUEST_CODE_GET_PHOTO);
                     break;
                 case R.id.btnAddVideo:
+                    i = new Intent(MediaStore.ACTION_VIDEO_CAPTURE);
+                    f = new File(getMediaDir(), System.currentTimeMillis() + ".mp4");
+                    if(!f.exists()){
+                        try {
+                            f.createNewFile();
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                    currentPath = f.getAbsolutePath();
+                    i.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(f));
 
+                    startActivityForResult(i,REQUEST_CODE_GET_VIDEO);
                     break;
             }
         }
     };
+
+    public File getMediaDir(){
+        File dir = new File(Environment.getExternalStorageDirectory(), "NotesMedia");
+        if(!dir.exists()){
+            dir.mkdirs();
+        }
+        return dir;
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -91,6 +137,20 @@ public class AtyEditNote extends ListActivity {
         findViewById(R.id.btnAddVideo).setOnClickListener(btnClickHandler);
         findViewById(R.id.btnAddPhoto).setOnClickListener(btnClickHandler);
 
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        switch (requestCode)
+        {
+            case REQUEST_CODE_GET_PHOTO:
+            case REQUEST_CODE_GET_VIDEO:
+                if(resultCode == RESULT_OK){
+                    adapter.add(new MediaListCellData(currentPath));
+                    adapter.notifyDataSetChanged();
+                }
+                break;
+        }
     }
 
     public void saveMedia(int nId){

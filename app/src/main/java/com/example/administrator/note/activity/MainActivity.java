@@ -6,8 +6,8 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.support.v4.widget.SimpleCursorAdapter;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.ListView;
 
@@ -33,6 +33,7 @@ public class MainActivity extends ListActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+       // Log.e("onCreate","cccccccccccccccccccc&&&&&&&&&&&");
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
@@ -55,24 +56,27 @@ public class MainActivity extends ListActivity {
 
         Intent i = new Intent(MainActivity.this, AtyEditNote.class);
         i.putExtra(AtyEditNote.EXTRA_NOTE_ID, c.getInt(c.getColumnIndex(NoteDB.COLUMN_ID)));
-        i.putExtra(AtyEditNote.EXTRA_NOTE_NAME, c.getInt(c.getColumnIndex(NoteDB.COLUMN_NOTE_NAME)));
-        i.putExtra(AtyEditNote.EXTRA_NOTE_CONTENT, c.getInt(c.getColumnIndex(NoteDB.COLUMN_NOTE_CONTENT)));
+        i.putExtra(AtyEditNote.EXTRA_NOTE_NAME, c.getString(c.getColumnIndex(NoteDB.COLUMN_NOTE_NAME)));
+        i.putExtra(AtyEditNote.EXTRA_NOTE_CONTENT, c.getString(c.getColumnIndex(NoteDB.COLUMN_NOTE_CONTENT)));
 
         startActivityForResult(i, REQUEST_CODE_EDIT_NOTE);
 
     }
 
     public void refreshNotesListView(){
+       // Log.e("refresh","refresh刷新((((((((((***************************");
         adapter.changeCursor(dbRead.query(NoteDB.TABLE_NOTES, null,null,null, null, null, null));
     }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+       // Log.e("onResult", "Restulj&&&&&&&");
         switch (requestCode)
         {
             case REQUEST_CODE_ADD_NOTE:
             case REQUEST_CODE_EDIT_NOTE:
-                if(requestCode == Activity.RESULT_OK)
+                //Log.e("ok","ok&&&&&&&&&&&&())))))))))))))))))))))))))))))))");
+                if(resultCode == Activity.RESULT_OK)
                 {
                     refreshNotesListView();
                 }
