@@ -1,6 +1,7 @@
 package com.example.administrator.note.activity;
 
 import android.app.ListActivity;
+import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
@@ -17,7 +18,9 @@ import android.widget.TextView;
 import com.example.administrator.note.R;
 import com.example.administrator.note.db.NoteDB;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 public class AtyEditNote extends ListActivity {
@@ -31,7 +34,7 @@ public class AtyEditNote extends ListActivity {
     private MediaAdapter adapter;
 
     private NoteDB db;
-    private SQLiteDatabase dbRead;
+    private SQLiteDatabase dbRead,dbWrite;
     private View.OnClickListener btnClickHandler = new View.OnClickListener() {
         @Override
         public void onClick(View view) {
@@ -60,6 +63,7 @@ public class AtyEditNote extends ListActivity {
 
         db = new NoteDB(this);
         dbRead = db.getReadableDatabase();
+        dbWrite = db.getWritableDatabase();
 
         adapter = new MediaAdapter(this);
         setListAdapter(adapter);
@@ -76,8 +80,8 @@ public class AtyEditNote extends ListActivity {
             while (c.moveToNext())
             {
                 adapter.add(new MediaListCellData(c.getString(c.getColumnIndex(NoteDB.COLUMN_MEDIA_PATH)),c.getInt(c.getColumnIndex(NoteDB.COLUMN_ID))));
-
             }
+            adapter.notifyDataSetChanged();
         }
 
         findViewById(R.id.btnSave).setOnClickListener(btnClickHandler);
@@ -87,9 +91,37 @@ public class AtyEditNote extends ListActivity {
 
     }
 
+    public void saveMedia(int nId){
+
+        MediaListCellData data;
+
+        for (int i=0; i<adapter.getCount(); i++)
+        {
+            data = adapter.getItem(i);
+            if(data.id <= -1){
+
+            }
+        }
+    }
+    public int saveNote(){
+        ContentValues cv = new ContentValues();
+        cv.put(NoteDB.COLUMN_NOTE_NAME, etName.getText().toString());
+        cv.put(NoteDB.COLUMN_NOTE_CONTENT,etContent.getText().toString());
+        cv.put(NoteDB.COLUMN_NOTE_DATE, new SimpleDateFormat("yyyy-MM-dd hh:mm:ss").format(new Date()));
+
+        if(noteId > -1){
+            dbWrite.update(NoteDB.TABLE_NOTES, cv, NoteDB.COLUMN_ID + "=?", new String[] {noteId + ""});
+            return noteId;
+        }
+        else
+        {
+            return (int)dbWrite.insert(NoteDB.TABLE_NOTES, null, cv);
+        }
+    }
     @Override
     protected void onDestroy() {
         dbRead.close();
+        dbWrite.close();
         super.onDestroy();
     }
 
