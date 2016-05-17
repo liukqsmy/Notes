@@ -40,7 +40,9 @@ public class AtyEditNote extends ListActivity {
         public void onClick(View view) {
             switch (view.getId()){
                 case R.id.btnSave:
-
+                    saveMedia(saveNote());
+                    setResult(RESULT_OK);
+                    finish();
                     break;
                 case R.id.btnCancel:
                     setResult(RESULT_CANCELED);
@@ -94,15 +96,20 @@ public class AtyEditNote extends ListActivity {
     public void saveMedia(int nId){
 
         MediaListCellData data;
+        ContentValues cv;
 
         for (int i=0; i<adapter.getCount(); i++)
         {
             data = adapter.getItem(i);
             if(data.id <= -1){
-
+                cv = new ContentValues();
+                cv.put(NoteDB.COLUMN_MEDIA_PATH, data.path);
+                cv.put(NoteDB.COLUMN_MEDIA_OWNER_ID, noteId);
+                dbWrite.insert(NoteDB.TABLE_MEDIA,null, cv);
             }
         }
     }
+
     public int saveNote(){
         ContentValues cv = new ContentValues();
         cv.put(NoteDB.COLUMN_NOTE_NAME, etName.getText().toString());
