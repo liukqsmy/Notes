@@ -1,9 +1,14 @@
 package com.example.administrator.note.activity;
 
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.ImageView;
+
+import com.example.administrator.note.R;
 
 import java.io.File;
 
@@ -19,9 +24,15 @@ public class AtyPhotoViewer extends AppCompatActivity {
         iv = new ImageView(this);
         setContentView(iv);
 
+        //setContentView(R.layout.aty_photo_viewer);
+       // iv = (ImageView) findViewById(R.id.photoViewer);
+
         String path = getIntent().getStringExtra(EXTRA_PATH);
+        //Log.e("pthfdfdpath", "adffffffffffffffffffffffff_:" + path);
         if(path != null)
         {
+           // Bitmap bm = BitmapFactory.decodeFile(path);
+           // iv.setImageBitmap(bm);
             iv.setImageURI(Uri.fromFile(new File(path)));
 
         }else

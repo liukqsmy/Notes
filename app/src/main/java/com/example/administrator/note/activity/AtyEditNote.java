@@ -11,12 +11,14 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
 import android.provider.Settings;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.ListView;
 import android.widget.TextView;
 
 import com.example.administrator.note.R;
@@ -123,13 +125,15 @@ public class AtyEditNote extends ListActivity {
         if(noteId > -1){
             etName.setText(getIntent().getStringExtra(EXTRA_NOTE_NAME));
             etContent.setText(getIntent().getStringExtra(EXTRA_NOTE_CONTENT));
-
+            //Log.e("noteId","id:"+noteId);
             Cursor c = dbRead.query(NoteDB.TABLE_MEDIA,null, NoteDB.COLUMN_MEDIA_OWNER_ID + "=?", new String[] {noteId+""},null,null,null);
             while (c.moveToNext())
             {
+                //Log.e("creat","bbbbbbbbbbbb笨笨笨笨笨笨笨笨笨笨笨笨笨笨笨笨吧");
                 adapter.add(new MediaListCellData(c.getString(c.getColumnIndex(NoteDB.COLUMN_MEDIA_PATH)),c.getInt(c.getColumnIndex(NoteDB.COLUMN_ID))));
             }
             adapter.notifyDataSetChanged();
+
         }
 
         findViewById(R.id.btnSave).setOnClickListener(btnClickHandler);
@@ -146,6 +150,7 @@ public class AtyEditNote extends ListActivity {
             case REQUEST_CODE_GET_PHOTO:
             case REQUEST_CODE_GET_VIDEO:
                 if(resultCode == RESULT_OK){
+                   // Log.e("ok","djfalkjdflk积分卡角度来看减肥啦看dkkkkkkkkkkkkkkk8888**");
                     adapter.add(new MediaListCellData(currentPath));
                     adapter.notifyDataSetChanged();
                 }
@@ -154,7 +159,7 @@ public class AtyEditNote extends ListActivity {
     }
 
     public void saveMedia(int nId){
-
+        //Log.e("saveMedia","noteId=" + nId);
         MediaListCellData data;
         ContentValues cv;
 
@@ -164,10 +169,36 @@ public class AtyEditNote extends ListActivity {
             if(data.id <= -1){
                 cv = new ContentValues();
                 cv.put(NoteDB.COLUMN_MEDIA_PATH, data.path);
-                cv.put(NoteDB.COLUMN_MEDIA_OWNER_ID, noteId);
+                cv.put(NoteDB.COLUMN_MEDIA_OWNER_ID, nId);
                 dbWrite.insert(NoteDB.TABLE_MEDIA,null, cv);
             }
         }
+    }
+
+    @Override
+    protected void onListItemClick(ListView l, View v, int position, long id) {
+        MediaListCellData data = adapter.getItem(position);
+        Intent i;
+        switch (data.type)
+        {
+            case MediaType.PHOTO:
+                i = new Intent(this, AtyPhotoViewer.class);
+                i.putExtra(AtyPhotoViewer.EXTRA_PATH, data.path);
+               // Log.e("savepaht:",data.path);
+                startActivity(i);
+
+                break;
+            case  MediaType.VEDIO:
+                i = new Intent(this, AtyVideoViewer.class);
+                i.putExtra(AtyVideoViewer.EXTRA_PATH, data.path);
+                startActivity(i);
+                break;
+            default:
+                break;
+        }
+
+
+        super.onListItemClick(l, v, position, id);
     }
 
     public int saveNote(){
@@ -225,6 +256,7 @@ public class AtyEditNote extends ListActivity {
         public View getView(int i, View view, ViewGroup viewGroup) {
             if(view == null)
             {
+               // Log.e("buju","布局&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&");
                 view = LayoutInflater.from(context).inflate(R.layout.media_list_cell,null);
 
             }
@@ -247,9 +279,11 @@ public class AtyEditNote extends ListActivity {
 
             if(path.endsWith(".jpg")){
                 iconId = R.drawable.icon_photo;
+                type = MediaType.PHOTO;
             }
             else if(path.endsWith(".mp4")){
                 iconId = R.drawable.icon_video;
+                type = MediaType.VEDIO;
             }
         }
         public  MediaListCellData(String path, int id)
@@ -259,7 +293,12 @@ public class AtyEditNote extends ListActivity {
         }
         int id = -1;
         String path = "";
+        int type = 0;
         int iconId = R.mipmap.ic_launcher;
     }
 
+    static class MediaType{
+        static final int PHOTO = 1;
+        static final int VEDIO = 2;
+    }
 }
