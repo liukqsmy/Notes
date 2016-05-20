@@ -20,20 +20,23 @@ public class AtyPhotoViewer extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setContentView(R.layout.aty_photo_viewer);
+        iv = (ImageView) findViewById(R.id.photoViewer);
 
-        iv = new ImageView(this);
-        setContentView(iv);
+        //iv = new ImageView(this);
+        //setContentView(iv);
 
-        //setContentView(R.layout.aty_photo_viewer);
-       // iv = (ImageView) findViewById(R.id.photoViewer);
 
         String path = getIntent().getStringExtra(EXTRA_PATH);
         //Log.e("pthfdfdpath", "adffffffffffffffffffffffff_:" + path);
         if(path != null)
         {
-           // Bitmap bm = BitmapFactory.decodeFile(path);
-           // iv.setImageBitmap(bm);
-            iv.setImageURI(Uri.fromFile(new File(path)));
+            BitmapFactory.Options option = new BitmapFactory.Options();
+            option.inSampleSize = 4;
+            Bitmap bm = BitmapFactory.decodeFile(path,option);
+            iv.setImageBitmap(bm);
+            Log.e("pthfdfdpath", "adffffffffffffffffffffffff_:" + path);
+            //iv.setImageURI(Uri.fromFile(new File(path)));
 
         }else
         {
